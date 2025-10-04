@@ -1,0 +1,443 @@
+.exoplanet-hunt-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(10px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.exoplanet-hunt-modal {
+  width: 95%;
+  height: 95%;
+  max-width: 1200px;
+  max-height: 800px;
+  background: linear-gradient(135deg, rgba(10, 15, 30, 0.98) 0%, rgba(5, 8, 15, 0.99) 100%);
+  border-radius: 20px;
+  border: 1px solid rgba(100, 181, 246, 0.3);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Menu State */
+.hunt-menu {
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+}
+
+.hunt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.hunt-header h2 {
+  font-size: 2.5rem;
+  background: linear-gradient(135deg, #4dd0e1, #64b5f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+}
+
+.hunt-close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.hunt-close:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.hunt-instructions {
+  max-width: 600px;
+  margin-bottom: 40px;
+}
+
+.hunt-instructions h3 {
+  color: #ffb74d;
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+}
+
+.hunt-instructions p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+.instructions-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.instruction-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: rgba(100, 181, 246, 0.1);
+  border-radius: 10px;
+  border: 1px solid rgba(100, 181, 246, 0.2);
+}
+
+.instruction-icon {
+  font-size: 24px;
+  min-width: 30px;
+}
+
+.start-hunt-btn {
+  background: linear-gradient(135deg, #4dd0e1, #64b5f6);
+  border: none;
+  color: white;
+  padding: 15px 40px;
+  border-radius: 25px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 25px rgba(77, 208, 225, 0.3);
+}
+
+.start-hunt-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(77, 208, 225, 0.4);
+}
+
+/* Game State */
+.hunt-game {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.hunt-hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 30px;
+  background: rgba(0, 0, 0, 0.5);
+  border-bottom: 1px solid rgba(100, 181, 246, 0.2);
+}
+
+.hud-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.hud-label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.hud-value {
+  color: #4dd0e1;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.hunt-close-game {
+  background: rgba(255, 107, 53, 0.2);
+  border: 1px solid rgba(255, 107, 53, 0.4);
+  color: #ff6b35;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.hunt-close-game:hover {
+  background: rgba(255, 107, 53, 0.3);
+  border-color: rgba(255, 107, 53, 0.6);
+}
+
+.hunt-canvas {
+  flex: 1;
+  width: 100%;
+  background: radial-gradient(ellipse at center, rgba(10, 15, 30, 1) 0%, rgba(5, 8, 15, 1) 100%);
+  cursor: crosshair;
+}
+
+.hunt-discoveries {
+  position: absolute;
+  top: 120px;
+  right: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.discovery-notification {
+  background: rgba(76, 175, 80, 0.9);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  animation: slideInRight 0.5s ease-out, fadeOut 3s ease-out 2s forwards;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+/* Results State */
+.hunt-results {
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.results-header h2 {
+  font-size: 2.2rem;
+  background: linear-gradient(135deg, #ffb74d, #ff8a65);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+}
+
+.results-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.stat-card {
+  background: rgba(100, 181, 246, 0.1);
+  border: 1px solid rgba(100, 181, 246, 0.2);
+  border-radius: 15px;
+  padding: 25px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  background: rgba(100, 181, 246, 0.15);
+  border-color: rgba(100, 181, 246, 0.3);
+  transform: translateY(-2px);
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #4dd0e1;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.stat-label {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.results-achievements {
+  margin-bottom: 40px;
+}
+
+.results-achievements h3 {
+  color: #ffb74d;
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.achievements-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.achievement {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 20px;
+  background: rgba(255, 183, 77, 0.1);
+  border: 1px solid rgba(255, 183, 77, 0.3);
+  border-radius: 10px;
+  animation: slideInLeft 0.5s ease-out;
+}
+
+.achievement-icon {
+  font-size: 24px;
+  min-width: 30px;
+}
+
+.results-actions {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: auto;
+}
+
+.play-again-btn,
+.explore-catalog-btn {
+  padding: 12px 30px;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.play-again-btn {
+  background: linear-gradient(135deg, #4dd0e1, #64b5f6);
+  color: white;
+  box-shadow: 0 8px 25px rgba(77, 208, 225, 0.3);
+}
+
+.play-again-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(77, 208, 225, 0.4);
+}
+
+.explore-catalog-btn {
+  background: rgba(100, 181, 246, 0.2);
+  border: 1px solid rgba(100, 181, 246, 0.4);
+  color: #64b5f6;
+}
+
+.explore-catalog-btn:hover {
+  background: rgba(100, 181, 246, 0.3);
+  border-color: rgba(100, 181, 246, 0.6);
+  transform: translateY(-2px);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .exoplanet-hunt-modal {
+    width: 98%;
+    height: 98%;
+  }
+  
+  .hunt-menu {
+    padding: 20px;
+  }
+  
+  .hunt-header h2 {
+    font-size: 2rem;
+  }
+  
+  .instructions-list {
+    grid-template-columns: 1fr;
+  }
+  
+  .hunt-hud {
+    padding: 15px 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .hud-item {
+    flex-direction: row;
+    gap: 10px;
+  }
+  
+  .results-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .results-actions {
+    flex-direction: column;
+  }
+  
+  .hunt-discoveries {
+    right: 10px;
+    top: 100px;
+  }
+  
+  .discovery-notification {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+}

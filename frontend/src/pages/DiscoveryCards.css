@@ -1,0 +1,677 @@
+.discovery-cards {
+  padding: 0;
+  min-height: 100vh;
+}
+
+.discovery-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 30px;
+  margin-bottom: 20px;
+}
+
+.discovery-header h1 {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 2.5rem;
+  font-weight: 800;
+}
+
+.info-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.info-btn:hover {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.search-section {
+  padding: 0 20px 20px;
+}
+
+.search-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 16px;
+  color: var(--secondary-text);
+  z-index: 1;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 16px 12px 48px;
+  background: var(--card-bg);
+  border: 1px solid rgba(77, 208, 225, 0.2);
+  border-radius: 12px;
+  color: var(--primary-text);
+  font-size: 16px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.search-input:focus {
+  border-color: var(--teal-light);
+  box-shadow: 0 0 0 3px rgba(77, 208, 225, 0.1);
+}
+
+.search-input::placeholder {
+  color: var(--secondary-text);
+}
+
+.card-container {
+  padding: 0;
+}
+
+@media (min-width: 769px) {
+  .card-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+}
+
+.discovery-card {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  border: 1px solid rgba(77, 208, 225, 0.1);
+  margin-bottom: 20px;
+}
+
+@media (min-width: 769px) {
+  .discovery-card {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    margin-bottom: 30px;
+  }
+}
+
+.card-image {
+  position: relative;
+  height: 300px;
+  overflow: hidden;
+}
+
+.card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.1) 0%,
+    rgba(0, 0, 0, 0.3) 50%,
+    rgba(0, 0, 0, 0.7) 100%
+  );
+}
+
+.confidence-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: var(--teal-primary);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.card-content {
+  padding: 20px;
+}
+
+.card-header {
+  margin-bottom: 12px;
+}
+
+.discovery-name {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--primary-text);
+  margin: 0 0 4px 0;
+}
+
+.discovery-type {
+  font-size: 14px;
+  color: var(--teal-light);
+  font-weight: 500;
+}
+
+.discovery-description {
+  font-size: 14px;
+  color: var(--secondary-text);
+  line-height: 1.5;
+  margin: 0 0 20px 0;
+}
+
+.discovery-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--secondary-text);
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 14px;
+  color: var(--primary-text);
+  font-weight: 600;
+}
+
+.card-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  margin-bottom: 20px;
+}
+
+.nav-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--card-bg);
+  border: 1px solid rgba(77, 208, 225, 0.2);
+  color: var(--primary-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav-btn:hover:not(:disabled) {
+  background: var(--teal-primary);
+  border-color: var(--teal-primary);
+  color: white;
+}
+
+.nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.card-indicators {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(77, 208, 225, 0.3);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.indicator.active {
+  background: var(--teal-light);
+  transform: scale(1.2);
+}
+
+.no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--secondary-text);
+}
+
+.no-results svg {
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.no-results h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: var(--primary-text);
+}
+
+.no-results p {
+  font-size: 14px;
+  margin: 0;
+}
+
+@media (max-width: 380px) {
+  .card-content {
+    padding: 16px;
+  }
+  
+  .discovery-name {
+    font-size: 20px;
+  }
+  
+  .discovery-stats {
+    gap: 8px;
+  }
+  
+  .card-navigation {
+    padding: 0 16px;
+  }
+}.ca
+rd-3d-planet {
+  display: none;
+}
+
+@media (min-width: 769px) {
+  .card-3d-planet {
+    display: block;
+    background: rgba(0, 0, 0, 0.3);
+  }
+  
+  .card-image {
+    height: 300px;
+  }
+  
+  .card-content {
+    padding: 30px;
+  }
+  
+  .discovery-name {
+    font-size: 28px;
+  }
+  
+  .discovery-description {
+    font-size: 16px;
+    margin-bottom: 24px;
+  }
+  
+  .discovery-stats {
+    gap: 16px;
+  }
+}
+/* Auto-cha
+nging image styles */
+.auto-changing-image {
+  transition: opacity 0.5s ease-in-out;
+  animation: fadeInScale 0.5s ease-out;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.image-indicators {
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 2;
+}
+
+.image-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+.image-indicator.active {
+  background: white;
+  transform: scale(1.2);
+}
+
+/* Enhanced card styling */
+.card-container {
+  padding: 0 30px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.discovery-card {
+  background: var(--gradient-card);
+  backdrop-filter: blur(20px);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  border: 1px solid rgba(77, 208, 225, 0.2);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.discovery-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-glow);
+  border-color: var(--accent-text);
+}
+
+.card-image {
+  position: relative;
+  height: 300px;
+  overflow: hidden;
+}
+
+.card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.1) 0%,
+    rgba(0, 0, 0, 0.3) 50%,
+    rgba(0, 0, 0, 0.7) 100%
+  );
+}
+
+.confidence-badge {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: var(--gradient-secondary);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+  z-index: 2;
+}
+
+.card-3d-planet {
+  position: absolute;
+  top: 50%;
+  left: 30px;
+  transform: translateY(-50%);
+  z-index: 2;
+}
+
+.card-content {
+  padding: 40px;
+  position: relative;
+}
+
+.card-header {
+  margin-bottom: 20px;
+}
+
+.discovery-name {
+  font-size: 2rem;
+  font-weight: 800;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+}
+
+.discovery-type {
+  background: var(--gradient-primary);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.discovery-description {
+  color: var(--secondary-text);
+  font-size: 1.1rem;
+  line-height: 1.7;
+  margin-bottom: 30px;
+}
+
+.discovery-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+}
+
+.stat-item {
+  background: rgba(102, 126, 234, 0.05);
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(102, 126, 234, 0.1);
+  transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+  background: rgba(102, 126, 234, 0.1);
+  transform: translateY(-2px);
+}
+
+.stat-label {
+  display: block;
+  color: var(--secondary-text);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  display: block;
+  color: var(--primary-text);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.card-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 30px;
+}
+
+.nav-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.nav-btn:hover:not(:disabled) {
+  transform: scale(1.1);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.card-indicators {
+  display: flex;
+  gap: 12px;
+}
+
+.indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(102, 126, 234, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.indicator.active {
+  background: var(--gradient-primary);
+  transform: scale(1.2);
+}
+
+.indicator:hover {
+  background: var(--gradient-primary);
+  transform: scale(1.1);
+}
+
+.no-results {
+  text-align: center;
+  padding: 60px 30px;
+  color: var(--secondary-text);
+}
+
+.no-results svg {
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.no-results h3 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  color: var(--primary-text);
+}
+
+@media (max-width: 768px) {
+  .discovery-header {
+    padding: 20px;
+  }
+  
+  .discovery-header h1 {
+    font-size: 2rem;
+  }
+  
+  .card-container {
+    padding: 0 20px;
+  }
+  
+  .card-content {
+    padding: 30px 20px;
+  }
+  
+  .discovery-name {
+    font-size: 1.5rem;
+  }
+  
+  .discovery-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .card-3d-planet {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    margin: 20px 0;
+  }
+}/* Disc
+overy planet placeholder styles */
+.discovery-planet-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  padding: 20px;
+}
+
+.discovery-planet-placeholder .planet-visualization.large {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.discovery-planet-placeholder .planet-sphere {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  animation: planetRotate 12s linear infinite;
+  box-shadow: 0 0 30px rgba(79, 195, 247, 0.6);
+}
+
+.discovery-planet-placeholder .planet-sphere.terrestrial {
+  background: linear-gradient(135deg, #81c784, #66bb6a);
+  box-shadow: 0 0 30px rgba(129, 199, 132, 0.6);
+}
+
+.discovery-planet-placeholder .planet-sphere.gas-giant {
+  background: linear-gradient(135deg, #ffb74d, #ffa726);
+  box-shadow: 0 0 30px rgba(255, 183, 77, 0.6);
+}
+
+.discovery-planet-placeholder .planet-sphere.ice-giant {
+  background: linear-gradient(135deg, #64b5f6, #42a5f5);
+  box-shadow: 0 0 30px rgba(100, 181, 246, 0.6);
+}
+
+.discovery-planet-placeholder .planet-rings {
+  position: absolute;
+  width: 140px;
+  height: 30px;
+  border: 3px solid rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  animation: ringRotate 20s linear infinite;
+}
+
+.discovery-planet-placeholder .planet-atmosphere {
+  position: absolute;
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  background: radial-gradient(circle, transparent 60%, rgba(135, 206, 235, 0.4) 100%);
+  animation: atmosphereGlow 4s ease-in-out infinite alternate;
+}

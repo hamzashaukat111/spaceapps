@@ -1,0 +1,150 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 80px;
+  background: rgba(26, 26, 46, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(77, 208, 225, 0.2);
+  z-index: 1000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+  .header {
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 428px;
+  }
+}
+
+@media (min-width: 769px) {
+  .header {
+    height: 100px;
+  }
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  padding: 0 20px;
+  padding-top: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .header-content {
+    max-width: 428px;
+  }
+  
+  .header-nav {
+    display: none;
+  }
+  
+  .app-title {
+    font-size: 18px;
+  }
+  
+  .cta-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+}
+
+@media (min-width: 769px) {
+  .header-content {
+    padding: 0 40px;
+    padding-top: 30px;
+  }
+}
+
+.header-left {
+  flex: 1;
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: var(--secondary-text);
+  font-weight: 500;
+  font-size: 15px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.nav-link:hover {
+  color: var(--accent-text);
+}
+
+.nav-link.active {
+  color: var(--accent-text);
+}
+
+.nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent-text);
+  border-radius: 1px;
+}
+
+.app-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--primary-text);
+}
+
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-text);
+}
+
+.app-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary-text);
+}
+
+.cta-btn {
+  padding: 12px 24px;
+  background: var(--gradient-primary);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-glow);
+}
+
+.cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(77, 208, 225, 0.4);
+}
+
+.header-right {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
