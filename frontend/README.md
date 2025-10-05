@@ -71,6 +71,7 @@ An interactive web application for discovering and exploring exoplanets using AI
 
    ```bash
    git clone [repository-url]
+   cd Exoplanet
    ```
 
 2. **Install dependencies**

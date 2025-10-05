@@ -1,234 +1,526 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import './LightCurveExplorer.css';
 
 const LightCurveExplorer = () => {
-  const [selectedDataset, setSelectedDataset] = useState('kepler');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState(null);
+  // AI Model Input Parameters (9 fields)
+  const [modelInputs, setModelInputs] = useState({
+    stellarMass: '',           // Solar masses
+    stellarRadius: '',         // Solar radii
+    stellarTemperature: '',    // Kelvin
+    orbitalPeriod: '',         // Days
+    transitDepth: '',          // Fractional depth
+    transitDuration: '',       // Hours
+    impactParameter: '',       // 0-1 scale
+    eccentricity: '',          // 0-1 scale
+    metallicity: ''            // [Fe/H] dex
+  });
+  
+  // State management
   const [uploadedFile, setUploadedFile] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [modelPrediction, setModelPrediction] = useState(null);
+  const [llmResponse, setLlmResponse] = useState('');
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState('');
+  const [isChatLoading, setIsChatLoading] = useState(false);
+  
+  const fileInputRef = useRef(null);
+  const csvInputRef = useRef(null);
 
-  // Mock light curve data
-  const generateLightCurve = () => {
-    const points = [];
-    const baseFlux = 1.0;
-    const transitDepth = 0.02;
-    const transitWidth = 20;
-    const transitCenter = 150;
-    
-    for (let i = 0; i < 300; i++) {
-      let flux = baseFlux + (Math.random() - 0.5) * 0.005; // Add noise
-      
-      // Add transit dip
-      if (Math.abs(i - transitCenter) < transitWidth) {
-        const transitFactor = 1 - transitDepth * Math.exp(-Math.pow((i - transitCenter) / 8, 2));
-        flux *= transitFactor;
-      }
-      
-      points.push({ time: i, flux });
-    }
-    return points;
+  // Dummy data for testing
+  const dummyData = {
+    stellarMass: '1.2',
+    stellarRadius: '1.1',
+    stellarTemperature: '5800',
+    orbitalPeriod: '4.2',
+    transitDepth: '0.015',
+    transitDuration: '2.8',
+    impactParameter: '0.3',
+    eccentricity: '0.05',
+    metallicity: '0.1'
   };
 
-  const [lightCurveData] = useState(generateLightCurve());
-
-  const datasets = [
-    { id: 'kepler', name: 'Kepler Mission', count: '150,000+ targets' },
-    { id: 'tess', name: 'TESS Mission', count: '200,000+ targets' },
-    { id: 'k2', name: 'K2 Mission', count: '300,000+ targets' },
-    { id: 'plato', name: 'PLATO Mission', count: 'Future data' }
-  ];
-
-  const handleAnalyze = () => {
-    setIsAnalyzing(true);
-    
-    // Simulate AI analysis
-    setTimeout(() => {
-      setAnalysisResult({
-        transitDetected: true,
-        confidence: 0.94,
-        period: 3.2,
-        depth: 0.018,
-        duration: 2.4,
-        planetRadius: '1.2 Earth radii',
-        narrative: 'AI detected a strong transit signal with high confidence. The periodic dimming suggests a planet approximately 1.2 times the size of Earth orbiting its host star every 3.2 days.'
-      });
-      setIsAnalyzing(false);
-    }, 3000);
+  // Handle input changes
+  const handleInputChange = (field, value) => {
+    setModelInputs(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
-  const handleFileUpload = (event) => {
+  // Load dummy data
+  const loadDummyData = () => {
+    setModelInputs(dummyData);
+  };
+
+  // Clear all inputs
+  const clearInputs = () => {
+    setModelInputs({
+      stellarMass: '',
+      stellarRadius: '',
+      stellarTemperature: '',
+      orbitalPeriod: '',
+      transitDepth: '',
+      transitDuration: '',
+      impactParameter: '',
+      eccentricity: '',
+      metallicity: ''
+    });
+  };
+
+  // Handle CSV file upload
+  const handleCsvUpload = (event) => {
     const file = event.target.files[0];
-    if (file) {
+    if (file && file.type === 'text/csv') {
       setUploadedFile(file);
-      setAnalysisResult(null);
+      
+      // Parse CSV and populate fields
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const csv = e.target.result;
+        const lines = csv.split('\n');
+        
+        // Assuming CSV format: field,value
+        const data = {};
+        lines.forEach(line => {
+          const [field, value] = line.split(',');
+          if (field && value && modelInputs.hasOwnProperty(field.trim())) {
+            data[field.trim()] = value.trim();
+          }
+        });
+        
+        setModelInputs(prev => ({ ...prev, ...data }));
+      };
+      reader.readAsText(file);
     }
+  };
+
+  // Run AI model prediction
+  const runPrediction = async () => {
+    // Validate inputs
+    const requiredFields = Object.keys(modelInputs);
+    const emptyFields = requiredFields.filter(field => !modelInputs[field]);
+    
+    if (emptyFields.length > 0) {
+      alert(`Please fill in all fields. Missing: ${emptyFields.join(', ')}`);
+      return;
+    }
+
+    setIsProcessing(true);
+    setModelPrediction(null);
+    setLlmResponse('');
+
+    try {
+      // Simulate API call to AI model
+      setTimeout(async () => {
+        // Mock prediction results
+        const prediction = {
+          planetRadius: (Math.sqrt(parseFloat(modelInputs.transitDepth)) * parseFloat(modelInputs.stellarRadius) * 109.2).toFixed(2),
+          planetMass: (Math.pow(parseFloat(modelInputs.orbitalPeriod) / 365.25, 2/3) * Math.pow(parseFloat(modelInputs.stellarMass), 1/3) * 317.8).toFixed(2),
+          equilibriumTemp: (parseFloat(modelInputs.stellarTemperature) * Math.sqrt(parseFloat(modelInputs.stellarRadius) / (2 * Math.pow(parseFloat(modelInputs.orbitalPeriod) / 365.25, 2/3)))).toFixed(0),
+          habitabilityScore: (Math.random() * 100).toFixed(1),
+          planetType: determinePlanetType(),
+          atmospherePresence: Math.random() > 0.5 ? 'Likely' : 'Unlikely',
+          confidence: (85 + Math.random() * 15).toFixed(1)
+        };
+
+        setModelPrediction(prediction);
+
+        // Generate LLM response based on prediction
+        const llmText = generateLLMResponse(prediction);
+        setLlmResponse(llmText);
+        
+        setIsProcessing(false);
+      }, 3000);
+
+    } catch (error) {
+      console.error('Prediction failed:', error);
+      setIsProcessing(false);
+    }
+  };
+
+  // Helper function to determine planet type
+  const determinePlanetType = () => {
+    const estimatedRadius = Math.sqrt(parseFloat(modelInputs.transitDepth)) * parseFloat(modelInputs.stellarRadius) * 109.2;
+    if (estimatedRadius < 1.25) return 'Terrestrial';
+    if (estimatedRadius < 2.0) return 'Super-Earth';
+    if (estimatedRadius < 4.0) return 'Mini-Neptune';
+    return 'Gas Giant';
+  };
+
+  // Generate LLM response
+  const generateLLMResponse = (prediction) => {
+    return `🌟 **Exoplanet Analysis Complete!**
+
+Based on the stellar and transit parameters you provided, our AI model has identified a fascinating ${prediction.planetType} exoplanet! Here's what we discovered:
+
+**🪐 Planet Characteristics:**
+- **Size**: ${prediction.planetRadius} Earth radii (${prediction.planetType})
+- **Mass**: ${prediction.planetMass} Earth masses  
+- **Temperature**: ${prediction.equilibriumTemp} K
+- **Atmosphere**: ${prediction.atmospherePresence}
+
+**🔬 Scientific Insights:**
+This ${prediction.planetType} orbits its host star every ${modelInputs.orbitalPeriod} days at a distance that results in an equilibrium temperature of ${prediction.equilibriumTemp} K. ${prediction.habitabilityScore > 50 ? 'The habitability score suggests this world could potentially support liquid water under the right atmospheric conditions!' : 'While not in the traditional habitable zone, this world offers unique insights into planetary formation and evolution.'}
+
+**🎯 Model Confidence:** ${prediction.confidence}%
+
+The transit depth of ${(parseFloat(modelInputs.transitDepth) * 100).toFixed(2)}% and duration of ${modelInputs.transitDuration} hours provide strong evidence for this planetary companion. ${parseFloat(modelInputs.impactParameter) < 0.5 ? 'The low impact parameter suggests we\'re seeing a nearly central transit, giving us excellent precision on the planet\'s radius.' : ''}
+
+Would you like to explore any specific aspects of this discovery or ask questions about the analysis?`;
+  };
+
+  // Handle chat functionality
+  const sendChatMessage = async () => {
+    if (!chatInput.trim() || !modelPrediction) return;
+
+    const userMessage = {
+      type: 'user',
+      content: chatInput,
+      timestamp: new Date().toLocaleTimeString()
+    };
+
+    setChatMessages(prev => [...prev, userMessage]);
+    setChatInput('');
+    setIsChatLoading(true);
+
+    // Simulate LLM response
+    setTimeout(() => {
+      const botResponse = {
+        type: 'bot',
+        content: generateChatResponse(chatInput, modelPrediction),
+        timestamp: new Date().toLocaleTimeString()
+      };
+
+      setChatMessages(prev => [...prev, botResponse]);
+      setIsChatLoading(false);
+    }, 1500);
+  };
+
+  // Generate contextual chat responses
+  const generateChatResponse = (question, prediction) => {
+    const lowerQuestion = question.toLowerCase();
+    
+    if (lowerQuestion.includes('habitable') || lowerQuestion.includes('life')) {
+      return `Based on the analysis, this ${prediction.planetType} has a habitability score of ${prediction.habitabilityScore}/100. ${prediction.habitabilityScore > 50 ? 'This suggests favorable conditions for liquid water, though atmospheric composition would be crucial for actual habitability.' : 'The conditions are challenging for Earth-like life, but extremophiles might find ways to survive.'}`;
+    }
+    
+    if (lowerQuestion.includes('atmosphere')) {
+      return `Our model predicts that an atmosphere is ${prediction.atmospherePresence.toLowerCase()} for this planet. ${prediction.planetType === 'Gas Giant' ? 'As a gas giant, it definitely has a thick atmosphere composed primarily of hydrogen and helium.' : prediction.planetType === 'Terrestrial' ? 'For terrestrial planets, atmospheric retention depends on mass, magnetic field, and stellar radiation.' : 'The atmospheric composition would depend on the planet\'s formation history and current stellar environment.'}`;
+    }
+    
+    if (lowerQuestion.includes('temperature') || lowerQuestion.includes('hot') || lowerQuestion.includes('cold')) {
+      return `The equilibrium temperature is ${prediction.equilibriumTemp} K (${(parseFloat(prediction.equilibriumTemp) - 273.15).toFixed(0)}°C). ${parseFloat(prediction.equilibriumTemp) > 373 ? 'This is quite hot - any water would be in vapor form.' : parseFloat(prediction.equilibriumTemp) > 273 ? 'This temperature range could allow for liquid water with the right atmospheric pressure.' : 'This is below the freezing point of water, so any water would likely be ice.'}`;
+    }
+    
+    if (lowerQuestion.includes('size') || lowerQuestion.includes('radius') || lowerQuestion.includes('big')) {
+      return `This planet has a radius of ${prediction.planetRadius} Earth radii, making it ${parseFloat(prediction.planetRadius) > 1 ? 'larger' : 'smaller'} than Earth. ${prediction.planetType === 'Super-Earth' ? 'Super-Earths like this are among the most common exoplanets we\'ve discovered!' : prediction.planetType === 'Gas Giant' ? 'Gas giants are fascinating worlds with complex atmospheric dynamics.' : 'Terrestrial planets give us the best insights into rocky world formation.'}`;
+    }
+    
+    return `That's an interesting question about this ${prediction.planetType}! The analysis shows it has unique characteristics with a ${prediction.confidence}% confidence level. What specific aspect would you like to explore further - its potential for habitability, atmospheric conditions, or formation history?`;
   };
 
   return (
     <div className="light-curve-explorer page-container">
       <div className="explorer-header">
-        <h1 className="page-title">Light-Curve Explorer & AI Sandbox</h1>
-        <button className="help-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
-            <path d="M9.09 9C9.3251 8.33167 9.78915 7.76811 10.4 7.40913C11.0108 7.05016 11.7289 6.91894 12.4272 7.03871C13.1255 7.15849 13.7588 7.52152 14.2151 8.06353C14.6713 8.60553 14.9211 9.29152 14.92 10C14.92 12 11.92 13 11.92 13" stroke="currentColor" strokeWidth="2"/>
-            <path d="M12 17H12.01" stroke="currentColor" strokeWidth="2"/>
-          </svg>
-        </button>
+        <h1 className="page-title">🤖 AI Exoplanet Detection Model</h1>
+        <p className="page-subtitle">Input stellar and transit parameters for AI-powered exoplanet analysis</p>
       </div>
 
-      <div className="mission-narrative">
-        <div className="narrative-card">
-          <h3>Mission Briefing: Kepler-442b Discovery</h3>
-          <p>You are analyzing light curve data from the Kepler Space Telescope. Your mission: identify potential exoplanet transits in the stellar brightness measurements. Each dip in the light curve could reveal a new world orbiting a distant star.</p>
-        </div>
-      </div>
-
-      <div className="dataset-selector">
-        <h3>Select Dataset</h3>
-        <div className="dataset-grid">
-          {datasets.map((dataset) => (
-            <button
-              key={dataset.id}
-              className={`dataset-card ${selectedDataset === dataset.id ? 'active' : ''}`}
-              onClick={() => setSelectedDataset(dataset.id)}
-            >
-              <div className="dataset-name">{dataset.name}</div>
-              <div className="dataset-count">{dataset.count}</div>
+      {/* Input Section */}
+      <div className="model-inputs-section">
+        <div className="section-header">
+          <h3>📊 Model Input Parameters</h3>
+          <div className="input-actions">
+            <button className="dummy-data-btn" onClick={loadDummyData}>
+              🎲 Load Dummy Data
             </button>
-          ))}
+            <button className="clear-btn" onClick={clearInputs}>
+              🗑️ Clear All
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div className="upload-section">
-        <h3>Upload Your Data</h3>
-        <div className="upload-area">
+        {/* CSV Upload */}
+        <div className="csv-upload-section">
           <input
             type="file"
-            id="file-upload"
-            accept=".csv,.txt,.fits"
-            onChange={handleFileUpload}
-            className="file-input"
+            ref={csvInputRef}
+            accept=".csv"
+            onChange={handleCsvUpload}
+            style={{ display: 'none' }}
           />
-          <label htmlFor="file-upload" className="upload-label">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" strokeWidth="2"/>
-              <path d="M7 10L12 5L17 10" stroke="currentColor" strokeWidth="2"/>
-              <path d="M12 5V15" stroke="currentColor" strokeWidth="2"/>
-            </svg>
-            <span>{uploadedFile ? uploadedFile.name : 'Upload light curve data'}</span>
-            <small>Supports CSV, TXT, FITS files</small>
-          </label>
-        </div>
-      </div>
-
-      <div className="light-curve-section">
-        <h3>Light Curve Visualization</h3>
-        <div className="chart-container">
-          <div className="chart-header">
-            <span className="chart-title">Stellar Brightness vs Time</span>
-            <div className="chart-controls">
-              <button className="zoom-btn">🔍 Zoom</button>
-              <button className="reset-btn">↻ Reset</button>
-            </div>
-          </div>
-          <div className="chart-area">
-            <svg width="100%" height="200" viewBox="0 0 300 200">
-              <defs>
-                <linearGradient id="curveGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="var(--teal-light)" stopOpacity="0.3"/>
-                  <stop offset="100%" stopColor="var(--teal-light)" stopOpacity="0"/>
-                </linearGradient>
-              </defs>
-              
-              {/* Grid lines */}
-              {[0, 1, 2, 3, 4].map(i => (
-                <line key={i} x1="0" y1={i * 40} x2="300" y2={i * 40} stroke="rgba(77, 208, 225, 0.1)" strokeWidth="1"/>
-              ))}
-              
-              {/* Light curve */}
-              <path
-                d={`M ${lightCurveData.map((point, i) => `${i} ${(1 - point.flux) * 200 + 50}`).join(' L ')}`}
-                fill="none"
-                stroke="var(--teal-light)"
-                strokeWidth="2"
-              />
-              
-              {/* Fill area */}
-              <path
-                d={`M ${lightCurveData.map((point, i) => `${i} ${(1 - point.flux) * 200 + 50}`).join(' L ')} L 300 200 L 0 200 Z`}
-                fill="url(#curveGradient)"
-              />
-              
-              {/* Transit marker */}
-              <circle cx="150" cy="90" r="4" fill="var(--warning)" opacity="0.8"/>
-              <text x="155" y="85" fill="var(--warning)" fontSize="10">Transit Detected</text>
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      <div className="ai-analysis-section">
-        <div className="analysis-header">
-          <h3>AI Analysis</h3>
           <button 
-            className="analyze-btn"
-            onClick={handleAnalyze}
-            disabled={isAnalyzing}
+            className="csv-upload-btn"
+            onClick={() => csvInputRef.current?.click()}
           >
-            {isAnalyzing ? (
+            📁 Upload CSV File
+          </button>
+          {uploadedFile && (
+            <span className="uploaded-file">✅ {uploadedFile.name}</span>
+          )}
+        </div>
+
+        {/* Input Grid */}
+        <div className="inputs-grid">
+          <div className="input-group">
+            <label htmlFor="stellarMass">Stellar Mass (M☉)</label>
+            <input
+              type="text"
+              id="stellarMass"
+              value={modelInputs.stellarMass}
+              onChange={(e) => handleInputChange('stellarMass', e.target.value)}
+              placeholder="e.g., 1.2"
+              className="model-input"
+            />
+            <span className="input-unit">Solar masses</span>
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="stellarRadius">Stellar Radius (R☉)</label>
+            <input
+              type="text"
+              id="stellarRadius"
+              value={modelInputs.stellarRadius}
+              onChange={(e) => handleInputChange('stellarRadius', e.target.value)}
+              placeholder="e.g., 1.1"
+              className="model-input"
+            />
+            <span className="input-unit">Solar radii</span>
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="stellarTemperature">Stellar Temperature</label>
+            <input
+              type="text"
+              id="stellarTemperature"
+              value={modelInputs.stellarTemperature}
+              onChange={(e) => handleInputChange('stellarTemperature', e.target.value)}
+              placeholder="e.g., 5800"
+              className="model-input"
+            />
+            <span className="input-unit">Kelvin</span>
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="orbitalPeriod">Orbital Period</label>
+            <input
+              type="text"
+              id="orbitalPeriod"
+              value={modelInputs.orbitalPeriod}
+              onChange={(e) => handleInputChange('orbitalPeriod', e.target.value)}
+              placeholder="e.g., 4.2"
+              className="model-input"
+            />
+            <span className="input-unit">Days</span>
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="transitDepth">Transit Depth</label>
+            <input
+              type="text"
+              id="transitDepth"
+              value={modelInputs.transitDepth}
+              onChange={(e) => handleInputChange('transitDepth', e.target.value)}
+              placeholder="e.g., 0.015"
+              className="model-input"
+            />
+            <span className="input-unit">Fractional</span>
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="transitDuration">Transit Duration</label>
+            <input
+              type="text"
+              id="transitDuration"
+              value={modelInputs.transitDuration}
+              onChange={(e) => handleInputChange('transitDuration', e.target.value)}
+              placeholder="e.g., 2.8"
+              className="model-input"
+            />
+            <span className="input-unit">Hours</span>
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="impactParameter">Impact Parameter</label>
+            <input
+              type="text"
+              id="impactParameter"
+              value={modelInputs.impactParameter}
+              onChange={(e) => handleInputChange('impactParameter', e.target.value)}
+              placeholder="e.g., 0.3"
+              className="model-input"
+            />
+            <span className="input-unit">0-1 scale</span>
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="eccentricity">Orbital Eccentricity</label>
+            <input
+              type="text"
+              id="eccentricity"
+              value={modelInputs.eccentricity}
+              onChange={(e) => handleInputChange('eccentricity', e.target.value)}
+              placeholder="e.g., 0.05"
+              className="model-input"
+            />
+            <span className="input-unit">0-1 scale</span>
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="metallicity">Stellar Metallicity</label>
+            <input
+              type="text"
+              id="metallicity"
+              value={modelInputs.metallicity}
+              onChange={(e) => handleInputChange('metallicity', e.target.value)}
+              placeholder="e.g., 0.1"
+              className="model-input"
+            />
+            <span className="input-unit">[Fe/H] dex</span>
+          </div>
+        </div>
+
+        {/* Run Prediction Button */}
+        <div className="prediction-section">
+          <button 
+            className="run-prediction-btn"
+            onClick={runPrediction}
+            disabled={isProcessing}
+          >
+            {isProcessing ? (
               <>
                 <div className="spinner"></div>
-                Analyzing...
+                Running AI Model...
               </>
             ) : (
               <>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
-                  <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="currentColor" strokeWidth="2" fill="currentColor"/>
                 </svg>
-                Run AI Analysis
+                Run Prediction
               </>
             )}
           </button>
         </div>
+      </div>
 
-        {analysisResult && (
-          <div className="analysis-results">
-            <div className="result-header">
-              <div className="detection-status">
-                <span className="status-icon">✓</span>
-                <span>Transit Detected</span>
-                <span className="confidence">Confidence: {Math.round(analysisResult.confidence * 100)}%</span>
+      {/* AI Output and Chat Section */}
+      {(modelPrediction || llmResponse) && (
+        <div className="ai-output-section">
+          <div className="section-header">
+            <h3>🎯 AI Analysis Results</h3>
+          </div>
+
+          {/* LLM Response */}
+          {llmResponse && (
+            <div className="llm-response">
+              <div className="response-content">
+                {llmResponse.split('\n').map((line, index) => (
+                  <p key={index} className={line.startsWith('**') ? 'response-heading' : 'response-text'}>
+                    {line}
+                  </p>
+                ))}
               </div>
             </div>
-            
-            <div className="result-stats">
-              <div className="stat-item">
-                <span className="stat-label">Orbital Period</span>
-                <span className="stat-value">{analysisResult.period} days</span>
+          )}
+
+          {/* Quick Stats */}
+          {modelPrediction && (
+            <div className="quick-stats">
+              <div className="stat-card">
+                <div className="stat-label">Planet Type</div>
+                <div className="stat-value">{modelPrediction.planetType}</div>
               </div>
-              <div className="stat-item">
-                <span className="stat-label">Transit Depth</span>
-                <span className="stat-value">{(analysisResult.depth * 100).toFixed(1)}%</span>
+              <div className="stat-card">
+                <div className="stat-label">Radius</div>
+                <div className="stat-value">{modelPrediction.planetRadius} R⊕</div>
               </div>
-              <div className="stat-item">
-                <span className="stat-label">Duration</span>
-                <span className="stat-value">{analysisResult.duration} hours</span>
+              <div className="stat-card">
+                <div className="stat-label">Mass</div>
+                <div className="stat-value">{modelPrediction.planetMass} M⊕</div>
               </div>
-              <div className="stat-item">
-                <span className="stat-label">Planet Size</span>
-                <span className="stat-value">{analysisResult.planetRadius}</span>
+              <div className="stat-card">
+                <div className="stat-label">Temperature</div>
+                <div className="stat-value">{modelPrediction.equilibriumTemp} K</div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-label">Habitability</div>
+                <div className="stat-value">{modelPrediction.habitabilityScore}/100</div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-label">Confidence</div>
+                <div className="stat-value">{modelPrediction.confidence}%</div>
               </div>
             </div>
-            
-            <div className="narrative-section">
-              <h4>AI Narrative</h4>
-              <p>{analysisResult.narrative}</p>
+          )}
+
+          {/* Chat Interface */}
+          <div className="chat-interface">
+            <div className="chat-header">
+              <h4>💬 Chat with AI Assistant</h4>
+              <p>Ask questions about the analysis results</p>
+            </div>
+
+            <div className="chat-messages">
+              {chatMessages.map((message, index) => (
+                <div key={index} className={`chat-message ${message.type}`}>
+                  <div className="message-avatar">
+                    {message.type === 'user' ? '👤' : '🤖'}
+                  </div>
+                  <div className="message-content">
+                    <div className="message-text">{message.content}</div>
+                    <div className="message-time">{message.timestamp}</div>
+                  </div>
+                </div>
+              ))}
+              
+              {isChatLoading && (
+                <div className="chat-message bot">
+                  <div className="message-avatar">🤖</div>
+                  <div className="message-content">
+                    <div className="typing-indicator">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="chat-input-section">
+              <div className="chat-input-container">
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  placeholder="Ask about habitability, atmosphere, temperature..."
+                  className="chat-input"
+                  onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
+                  disabled={!modelPrediction}
+                />
+                <button 
+                  className="send-btn"
+                  onClick={sendChatMessage}
+                  disabled={!chatInput.trim() || !modelPrediction || isChatLoading}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M22 2L11 13" stroke="currentColor" strokeWidth="2"/>
+                    <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" strokeWidth="2"/>
+                  </svg>
+                </button>
+              </div>
+              
+              {!modelPrediction && (
+                <p className="chat-disabled-message">
+                  Run a prediction first to enable chat functionality
+                </p>
+              )}
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

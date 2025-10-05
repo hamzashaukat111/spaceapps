@@ -22,7 +22,7 @@
   "scripts": {
     "start": "react-scripts start",
     "dev": "npm start",
-    "build": "CI=false react-scripts build",
+    "build": "react-scripts build",
     "build:prod": "NODE_ENV=production npm run build",
     "test": "react-scripts test",
     "test:coverage": "npm test -- --coverage --watchAll=false",
