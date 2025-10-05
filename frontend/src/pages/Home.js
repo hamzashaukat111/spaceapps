@@ -87,7 +87,7 @@ const Home = () => {
             className="main-story-video"
             poster="/video-poster.jpg"
           >
-            <source src="/1005.mp4?v=2" type="video/mp4" />
+            <source src="/1005.mp4?v=3" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
         </div>
