@@ -4,7 +4,14 @@
   "private": true,
   "description": "Interactive exoplanet discovery and exploration platform for NASA Space Apps Challenge",
   "author": "NASA Space Apps Challenge Team",
-  "keywords": ["exoplanets", "nasa", "space", "astronomy", "react", "three.js"],
+  "keywords": [
+    "exoplanets",
+    "nasa",
+    "space",
+    "astronomy",
+    "react",
+    "three.js"
+  ],
   "dependencies": {
     "@react-three/drei": "^9.88.13",
     "@react-three/fiber": "^8.15.11",

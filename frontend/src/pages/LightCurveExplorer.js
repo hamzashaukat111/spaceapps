@@ -24,7 +24,6 @@ const LightCurveExplorer = () => {
   const [chatInput, setChatInput] = useState('');
   const [isChatLoading, setIsChatLoading] = useState(false);
   
-  const fileInputRef = useRef(null);
   const csvInputRef = useRef(null);
 
   // Dummy data for testing
