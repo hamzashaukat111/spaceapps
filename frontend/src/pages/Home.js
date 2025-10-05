@@ -64,13 +64,41 @@ const Home = () => {
   return (
     <div className="home page-container">
       <div className="home-header">
-        <h1 className="page-title">NASA Exoplanet Discovery</h1>
+        <h1 className="page-title">Nexa - AI Exoplanet Discovery</h1>
         <button className="demo-btn" onClick={() => setShowDemo(true)}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
             <polygon points="10,8 16,12 10,16" fill="currentColor"/>
           </svg>
         </button>
+      </div>
+
+      {/* Featured Video Section */}
+      <div className="featured-video-section">
+        <div className="video-header">
+          <h2>🎬 Interactive Storytelling Experience</h2>
+          <p>Discover the fascinating world of AI-powered exoplanet detection through our interactive story</p>
+        </div>
+        <div className="main-video-container">
+          <video 
+            width="100%" 
+            height="500" 
+            controls 
+            className="main-story-video"
+            poster="/video-poster.jpg"
+          >
+            <source src="/1005.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div className="video-actions">
+          <button className="video-action-btn primary" onClick={() => setShowStory(true)}>
+            🚀 Start Interactive Story
+          </button>
+          <Link to="/explorer" className="video-action-btn secondary">
+            🤖 Try AI Model
+          </Link>
+        </div>
       </div>
 
       <div className="search-section">

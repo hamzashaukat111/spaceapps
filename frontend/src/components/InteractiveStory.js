@@ -11,6 +11,37 @@ const InteractiveStory = ({ isOpen, onClose }) => {
     {
       id: 'intro',
       title: 'The Discovery Begins',
+      subtitle: 'Nexa - AI Exoplanet Discovery Story',
+      content: 'Welcome to the interactive story of exoplanet discovery! Watch this introduction video to begin your journey into the fascinating world of AI-powered exoplanet detection and classification.',
+      visual: (
+        <div className="story-visual video-view">
+          <div className="story-video-container">
+            <video 
+              width="100%" 
+              height="300" 
+              controls 
+              autoPlay 
+              muted
+              className="story-video"
+            >
+              <source src="/1005.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <div className="video-description">
+            <p>🎬 Interactive Storytelling Experience</p>
+            <p>Discover how AI helps us find new worlds beyond our solar system</p>
+          </div>
+        </div>
+      ),
+      choices: [
+        { text: 'Begin the Discovery Journey', next: 'telescope' },
+        { text: 'Learn About AI Classification', next: 'ai-intro' }
+      ]
+    },
+    {
+      id: 'telescope',
+      title: 'The Telescope Data',
       subtitle: 'Kepler Space Telescope - 2023',
       content: 'You are Dr. Sarah Chen, an astrophysicist analyzing data from the Kepler Space Telescope. Tonight, something unusual catches your attention in the light curve of star HD 40307...',
       visual: (
@@ -43,6 +74,81 @@ const InteractiveStory = ({ isOpen, onClose }) => {
       choices: [
         { text: 'Investigate the anomaly further', next: 'analysis' },
         { text: 'Mark as instrumental error', next: 'error' }
+      ]
+    },
+    {
+      id: 'ai-intro',
+      title: 'AI-Powered Discovery',
+      subtitle: 'The Future of Exoplanet Detection',
+      content: 'Modern exoplanet discovery relies heavily on artificial intelligence and machine learning. AI models like Nexa can analyze thousands of stellar light curves simultaneously, identifying potential planets, candidates, and false positives with remarkable accuracy.',
+      visual: (
+        <div className="story-visual ai-explanation">
+          <div className="ai-workflow">
+            <div className="workflow-step">
+              <div className="step-icon">📊</div>
+              <div className="step-title">Data Input</div>
+              <div className="step-desc">12 stellar parameters</div>
+            </div>
+            <div className="workflow-arrow">→</div>
+            <div className="workflow-step">
+              <div className="step-icon">🤖</div>
+              <div className="step-title">AI Analysis</div>
+              <div className="step-desc">Neural network processing</div>
+            </div>
+            <div className="workflow-arrow">→</div>
+            <div className="workflow-step">
+              <div className="step-icon">🎯</div>
+              <div className="step-title">Classification</div>
+              <div className="step-desc">Planet/Candidate/False Positive</div>
+            </div>
+          </div>
+          <div className="ai-stats">
+            <div className="stat-item">
+              <span className="stat-number">95%</span>
+              <span className="stat-label">Accuracy Rate</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-number">1000x</span>
+              <span className="stat-label">Faster than Manual</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-number">3</span>
+              <span className="stat-label">Classification Types</span>
+            </div>
+          </div>
+        </div>
+      ),
+      choices: [
+        { text: 'Try the AI Model', next: 'model-demo' },
+        { text: 'Continue the Story', next: 'telescope' }
+      ]
+    },
+    {
+      id: 'model-demo',
+      title: 'Experience Nexa AI',
+      subtitle: 'Interactive Model Demo',
+      content: 'Ready to experience the power of AI-driven exoplanet classification? Click below to try the Nexa AI model with real astronomical data and see how machine learning is revolutionizing space discovery.',
+      visual: (
+        <div className="story-visual demo-preview">
+          <div className="demo-interface">
+            <div className="demo-screen">
+              <div className="demo-title">Nexa AI Classification Model</div>
+              <div className="demo-features">
+                <div className="feature">✨ 12 Input Parameters</div>
+                <div className="feature">🎯 3-Class Classification</div>
+                <div className="feature">💬 AI Chat Assistant</div>
+                <div className="feature">📊 Probability Scores</div>
+              </div>
+              <div className="demo-cta">
+                <button className="demo-button">Launch AI Model →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ),
+      choices: [
+        { text: 'Launch AI Model Interface', next: 'launch-model' },
+        { text: 'Continue Story Journey', next: 'telescope' }
       ]
     },
     {
@@ -300,6 +406,10 @@ const InteractiveStory = ({ isOpen, onClose }) => {
         onClose();
         // Navigate to catalog
         window.location.href = '/catalog';
+      } else if (choice.next === 'launch-model') {
+        onClose();
+        // Navigate to AI model interface
+        window.location.href = '/explorer';
       } else {
         const nextChapter = storyChapters.findIndex(ch => ch.id === choice.next);
         setCurrentChapter(nextChapter >= 0 ? nextChapter : 0);

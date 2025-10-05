@@ -2,17 +2,21 @@ import React, { useState, useRef } from 'react';
 import './LightCurveExplorer.css';
 
 const LightCurveExplorer = () => {
-  // AI Model Input Parameters (9 fields)
+  // AI Model Input Parameters (12 fields matching dataset)
   const [modelInputs, setModelInputs] = useState({
-    stellarMass: '',           // Solar masses
-    stellarRadius: '',         // Solar radii
-    stellarTemperature: '',    // Kelvin
-    orbitalPeriod: '',         // Days
-    transitDepth: '',          // Fractional depth
-    transitDuration: '',       // Hours
-    impactParameter: '',       // 0-1 scale
-    eccentricity: '',          // 0-1 scale
-    metallicity: ''            // [Fe/H] dex
+    source_id: '',        // Unique star ID (categorical)
+    period: '',           // Orbital period of exoplanet candidate
+    duration: '',         // Transit duration (hours)
+    depth: '',            // Transit depth (relative brightness drop)
+    radius: '',           // Planet radius
+    eqt: '',              // Equilibrium temperature
+    insol: '',            // Insolation flux (relative to Earth)
+    st_teff: '',          // Stellar effective temperature
+    st_logg: '',          // Stellar surface gravity
+    st_rad: '',           // Stellar radius
+    ra: '',               // Right ascension (celestial coordinate)
+    dec: '',              // Declination (celestial coordinate)
+    mission_code: 'KEPLER' // KEPLER/TESS/K2 (categorical)
   });
   
   // State management
@@ -26,17 +30,21 @@ const LightCurveExplorer = () => {
   
   const csvInputRef = useRef(null);
 
-  // Dummy data for testing
+  // Dummy data for testing (matching dataset features)
   const dummyData = {
-    stellarMass: '1.2',
-    stellarRadius: '1.1',
-    stellarTemperature: '5800',
-    orbitalPeriod: '4.2',
-    transitDepth: '0.015',
-    transitDuration: '2.8',
-    impactParameter: '0.3',
-    eccentricity: '0.05',
-    metallicity: '0.1'
+    source_id: 'KIC-12345678',
+    period: '4.2',
+    duration: '2.8',
+    depth: '0.015',
+    radius: '1.2',
+    eqt: '288',
+    insol: '1.1',
+    st_teff: '5800',
+    st_logg: '4.4',
+    st_rad: '1.1',
+    ra: '285.67',
+    dec: '42.33',
+    mission_code: 'KEPLER'
   };
 
   // Handle input changes
@@ -55,15 +63,19 @@ const LightCurveExplorer = () => {
   // Clear all inputs
   const clearInputs = () => {
     setModelInputs({
-      stellarMass: '',
-      stellarRadius: '',
-      stellarTemperature: '',
-      orbitalPeriod: '',
-      transitDepth: '',
-      transitDuration: '',
-      impactParameter: '',
-      eccentricity: '',
-      metallicity: ''
+      source_id: '',
+      period: '',
+      duration: '',
+      depth: '',
+      radius: '',
+      eqt: '',
+      insol: '',
+      st_teff: '',
+      st_logg: '',
+      st_rad: '',
+      ra: '',
+      dec: '',
+      mission_code: 'KEPLER'
     });
   };
 
@@ -112,15 +124,26 @@ const LightCurveExplorer = () => {
     try {
       // Simulate API call to AI model
       setTimeout(async () => {
-        // Mock prediction results
+        // Mock prediction results based on dataset output format
+        const labelOptions = ['planet', 'candidate', 'false_positive'];
+        const labelIndex = Math.floor(Math.random() * 3);
+        const predictedLabel = labelOptions[labelIndex];
+        
         const prediction = {
-          planetRadius: (Math.sqrt(parseFloat(modelInputs.transitDepth)) * parseFloat(modelInputs.stellarRadius) * 109.2).toFixed(2),
-          planetMass: (Math.pow(parseFloat(modelInputs.orbitalPeriod) / 365.25, 2/3) * Math.pow(parseFloat(modelInputs.stellarMass), 1/3) * 317.8).toFixed(2),
-          equilibriumTemp: (parseFloat(modelInputs.stellarTemperature) * Math.sqrt(parseFloat(modelInputs.stellarRadius) / (2 * Math.pow(parseFloat(modelInputs.orbitalPeriod) / 365.25, 2/3)))).toFixed(0),
-          habitabilityScore: (Math.random() * 100).toFixed(1),
-          planetType: determinePlanetType(),
-          atmospherePresence: Math.random() > 0.5 ? 'Likely' : 'Unlikely',
-          confidence: (85 + Math.random() * 15).toFixed(1)
+          label_enc: labelIndex, // 0=planet, 1=candidate, 2=false_positive
+          predicted_label: predictedLabel,
+          confidence: (85 + Math.random() * 15).toFixed(1),
+          probability_scores: {
+            planet: (Math.random() * 0.4 + (labelIndex === 0 ? 0.6 : 0.1)).toFixed(3),
+            candidate: (Math.random() * 0.4 + (labelIndex === 1 ? 0.6 : 0.1)).toFixed(3),
+            false_positive: (Math.random() * 0.4 + (labelIndex === 2 ? 0.6 : 0.1)).toFixed(3)
+          },
+          // Additional derived metrics for display
+          planetRadius: parseFloat(modelInputs.radius) || 1.0,
+          equilibriumTemp: parseFloat(modelInputs.eqt) || 288,
+          stellarTemp: parseFloat(modelInputs.st_teff) || 5800,
+          transitDepth: parseFloat(modelInputs.depth) || 0.01,
+          orbitalPeriod: parseFloat(modelInputs.period) || 1.0
         };
 
         setModelPrediction(prediction);
@@ -138,35 +161,55 @@ const LightCurveExplorer = () => {
     }
   };
 
-  // Helper function to determine planet type
-  const determinePlanetType = () => {
-    const estimatedRadius = Math.sqrt(parseFloat(modelInputs.transitDepth)) * parseFloat(modelInputs.stellarRadius) * 109.2;
-    if (estimatedRadius < 1.25) return 'Terrestrial';
-    if (estimatedRadius < 2.0) return 'Super-Earth';
-    if (estimatedRadius < 4.0) return 'Mini-Neptune';
-    return 'Gas Giant';
+  // Helper function to get classification description
+  const getClassificationDescription = (label) => {
+    switch(label) {
+      case 'planet':
+        return 'Confirmed Exoplanet';
+      case 'candidate':
+        return 'Exoplanet Candidate';
+      case 'false_positive':
+        return 'False Positive';
+      default:
+        return 'Unknown';
+    }
   };
 
   // Generate LLM response
   const generateLLMResponse = (prediction) => {
-    return `🌟 **Exoplanet Analysis Complete!**
+    const classification = getClassificationDescription(prediction.predicted_label);
+    const isConfirmed = prediction.predicted_label === 'planet';
+    const isCandidate = prediction.predicted_label === 'candidate';
+    
+    return `🌟 **Nexa AI Classification Complete!**
 
-Based on the stellar and transit parameters you provided, our AI model has identified a fascinating ${prediction.planetType} exoplanet! Here's what we discovered:
+Based on the stellar and transit parameters you provided, our AI model has classified this object as: **${classification}**
 
-**🪐 Planet Characteristics:**
-- **Size**: ${prediction.planetRadius} Earth radii (${prediction.planetType})
-- **Mass**: ${prediction.planetMass} Earth masses  
-- **Temperature**: ${prediction.equilibriumTemp} K
-- **Atmosphere**: ${prediction.atmospherePresence}
+**🎯 Classification Results:**
+- **Prediction**: ${classification}
+- **Confidence**: ${prediction.confidence}%
+- **Label Encoding**: ${prediction.label_enc}
 
-**🔬 Scientific Insights:**
-This ${prediction.planetType} orbits its host star every ${modelInputs.orbitalPeriod} days at a distance that results in an equilibrium temperature of ${prediction.equilibriumTemp} K. ${prediction.habitabilityScore > 50 ? 'The habitability score suggests this world could potentially support liquid water under the right atmospheric conditions!' : 'While not in the traditional habitable zone, this world offers unique insights into planetary formation and evolution.'}
+**📊 Probability Scores:**
+- **Planet**: ${(parseFloat(prediction.probability_scores.planet) * 100).toFixed(1)}%
+- **Candidate**: ${(parseFloat(prediction.probability_scores.candidate) * 100).toFixed(1)}%
+- **False Positive**: ${(parseFloat(prediction.probability_scores.false_positive) * 100).toFixed(1)}%
 
-**🎯 Model Confidence:** ${prediction.confidence}%
+**🔬 Object Characteristics:**
+- **Radius**: ${prediction.planetRadius} Earth radii
+- **Equilibrium Temperature**: ${prediction.equilibriumTemp} K
+- **Orbital Period**: ${prediction.orbitalPeriod} days
+- **Transit Depth**: ${(prediction.transitDepth * 100).toFixed(3)}%
+- **Host Star Temperature**: ${prediction.stellarTemp} K
 
-The transit depth of ${(parseFloat(modelInputs.transitDepth) * 100).toFixed(2)}% and duration of ${modelInputs.transitDuration} hours provide strong evidence for this planetary companion. ${parseFloat(modelInputs.impactParameter) < 0.5 ? 'The low impact parameter suggests we\'re seeing a nearly central transit, giving us excellent precision on the planet\'s radius.' : ''}
+**🚀 Scientific Interpretation:**
+${isConfirmed ? 'This object shows strong evidence of being a genuine exoplanet with high confidence scores across multiple parameters.' : 
+  isCandidate ? 'This object requires further observation and analysis to confirm its planetary nature. The signal shows promising characteristics but needs additional validation.' : 
+  'This signal is likely a false positive caused by stellar activity, instrumental noise, or other astrophysical phenomena rather than a transiting planet.'}
 
-Would you like to explore any specific aspects of this discovery or ask questions about the analysis?`;
+The transit signature with a depth of ${(prediction.transitDepth * 100).toFixed(3)}% and period of ${prediction.orbitalPeriod} days ${isConfirmed || isCandidate ? 'provides valuable insights into this potential world\'s properties.' : 'appears to be caused by non-planetary sources.'}
+
+Would you like to explore specific aspects of this classification or ask questions about the analysis methodology?`;
   };
 
   // Handle chat functionality
@@ -199,31 +242,43 @@ Would you like to explore any specific aspects of this discovery or ask question
   // Generate contextual chat responses
   const generateChatResponse = (question, prediction) => {
     const lowerQuestion = question.toLowerCase();
+    const classification = getClassificationDescription(prediction.predicted_label);
+    const isConfirmed = prediction.predicted_label === 'planet';
+    const isCandidate = prediction.predicted_label === 'candidate';
+    const isFalsePositive = prediction.predicted_label === 'false_positive';
     
-    if (lowerQuestion.includes('habitable') || lowerQuestion.includes('life')) {
-      return `Based on the analysis, this ${prediction.planetType} has a habitability score of ${prediction.habitabilityScore}/100. ${prediction.habitabilityScore > 50 ? 'This suggests favorable conditions for liquid water, though atmospheric composition would be crucial for actual habitability.' : 'The conditions are challenging for Earth-like life, but extremophiles might find ways to survive.'}`;
+    if (lowerQuestion.includes('classification') || lowerQuestion.includes('type') || lowerQuestion.includes('category')) {
+      return `The AI model classified this object as a **${classification}** with ${prediction.confidence}% confidence. ${isConfirmed ? 'This indicates strong evidence for a genuine exoplanet.' : isCandidate ? 'This means it shows promising signs but requires further validation.' : 'This suggests the signal is likely caused by non-planetary sources.'}`;
     }
     
-    if (lowerQuestion.includes('atmosphere')) {
-      return `Our model predicts that an atmosphere is ${prediction.atmospherePresence.toLowerCase()} for this planet. ${prediction.planetType === 'Gas Giant' ? 'As a gas giant, it definitely has a thick atmosphere composed primarily of hydrogen and helium.' : prediction.planetType === 'Terrestrial' ? 'For terrestrial planets, atmospheric retention depends on mass, magnetic field, and stellar radiation.' : 'The atmospheric composition would depend on the planet\'s formation history and current stellar environment.'}`;
+    if (lowerQuestion.includes('probability') || lowerQuestion.includes('score') || lowerQuestion.includes('confidence')) {
+      return `The probability scores are: Planet (${(parseFloat(prediction.probability_scores.planet) * 100).toFixed(1)}%), Candidate (${(parseFloat(prediction.probability_scores.candidate) * 100).toFixed(1)}%), False Positive (${(parseFloat(prediction.probability_scores.false_positive) * 100).toFixed(1)}%). The model is ${prediction.confidence}% confident in its ${classification} classification.`;
+    }
+    
+    if (lowerQuestion.includes('false positive') || lowerQuestion.includes('error') || lowerQuestion.includes('wrong')) {
+      return `${isFalsePositive ? 'Yes, this object is classified as a false positive, meaning the transit-like signal is likely caused by stellar activity, instrumental noise, or other astrophysical phenomena rather than a planet.' : `The false positive probability is ${(parseFloat(prediction.probability_scores.false_positive) * 100).toFixed(1)}%, which is ${parseFloat(prediction.probability_scores.false_positive) < 0.3 ? 'relatively low, suggesting this is likely a real signal.' : 'significant and should be considered in the analysis.'}`}`;
     }
     
     if (lowerQuestion.includes('temperature') || lowerQuestion.includes('hot') || lowerQuestion.includes('cold')) {
-      return `The equilibrium temperature is ${prediction.equilibriumTemp} K (${(parseFloat(prediction.equilibriumTemp) - 273.15).toFixed(0)}°C). ${parseFloat(prediction.equilibriumTemp) > 373 ? 'This is quite hot - any water would be in vapor form.' : parseFloat(prediction.equilibriumTemp) > 273 ? 'This temperature range could allow for liquid water with the right atmospheric pressure.' : 'This is below the freezing point of water, so any water would likely be ice.'}`;
+      return `The equilibrium temperature is ${prediction.equilibriumTemp} K (${(parseFloat(prediction.equilibriumTemp) - 273.15).toFixed(0)}°C). ${isConfirmed || isCandidate ? `${parseFloat(prediction.equilibriumTemp) > 373 ? 'This is quite hot - any water would be in vapor form.' : parseFloat(prediction.equilibriumTemp) > 273 ? 'This temperature range could allow for liquid water with the right atmospheric pressure.' : 'This is below the freezing point of water, so any water would likely be ice.'}` : 'However, since this is classified as a false positive, these temperature calculations may not represent a real planet.'}`;
     }
     
     if (lowerQuestion.includes('size') || lowerQuestion.includes('radius') || lowerQuestion.includes('big')) {
-      return `This planet has a radius of ${prediction.planetRadius} Earth radii, making it ${parseFloat(prediction.planetRadius) > 1 ? 'larger' : 'smaller'} than Earth. ${prediction.planetType === 'Super-Earth' ? 'Super-Earths like this are among the most common exoplanets we\'ve discovered!' : prediction.planetType === 'Gas Giant' ? 'Gas giants are fascinating worlds with complex atmospheric dynamics.' : 'Terrestrial planets give us the best insights into rocky world formation.'}`;
+      return `The input radius is ${prediction.planetRadius} Earth radii. ${isConfirmed ? 'As a confirmed planet, this size suggests interesting characteristics for further study.' : isCandidate ? 'If confirmed as a planet, this size would make it an interesting target for follow-up observations.' : 'However, since this is classified as a false positive, this radius measurement likely doesn\'t represent a real planet.'}`;
     }
     
-    return `That's an interesting question about this ${prediction.planetType}! The analysis shows it has unique characteristics with a ${prediction.confidence}% confidence level. What specific aspect would you like to explore further - its potential for habitability, atmospheric conditions, or formation history?`;
+    if (lowerQuestion.includes('period') || lowerQuestion.includes('orbit')) {
+      return `The orbital period is ${prediction.orbitalPeriod} days with a transit depth of ${(prediction.transitDepth * 100).toFixed(3)}%. ${isConfirmed || isCandidate ? 'This orbital configuration provides valuable insights into the system architecture.' : 'However, as a false positive, this periodicity is likely caused by stellar variability or other non-planetary sources.'}`;
+    }
+    
+    return `That's an interesting question about this ${classification}! The Nexa AI model shows ${prediction.confidence}% confidence in this classification. ${isConfirmed ? 'As a confirmed planet, this opens up many exciting research possibilities.' : isCandidate ? 'As a candidate, this object would benefit from additional observations to confirm its nature.' : 'As a false positive, this helps us understand the various sources of noise in exoplanet detection.'} What specific aspect would you like to explore further?`;
   };
 
   return (
     <div className="light-curve-explorer page-container">
       <div className="explorer-header">
-        <h1 className="page-title">🤖 AI Exoplanet Detection Model</h1>
-        <p className="page-subtitle">Input stellar and transit parameters for AI-powered exoplanet analysis</p>
+        <h1 className="page-title">🤖 Nexa AI Detection Model</h1>
+        <p className="page-subtitle">Input stellar and transit parameters for AI-powered exoplanet classification</p>
       </div>
 
       {/* Input Section */}
@@ -263,25 +318,129 @@ Would you like to explore any specific aspects of this discovery or ask question
         {/* Input Grid */}
         <div className="inputs-grid">
           <div className="input-group">
-            <label htmlFor="stellarMass">Stellar Mass (M☉)</label>
+            <label htmlFor="source_id">Source ID</label>
             <input
               type="text"
-              id="stellarMass"
-              value={modelInputs.stellarMass}
-              onChange={(e) => handleInputChange('stellarMass', e.target.value)}
-              placeholder="e.g., 1.2"
+              id="source_id"
+              value={modelInputs.source_id}
+              onChange={(e) => handleInputChange('source_id', e.target.value)}
+              placeholder="e.g., KIC-12345678"
               className="model-input"
             />
-            <span className="input-unit">Solar masses</span>
+            <span className="input-unit">Unique star identifier</span>
           </div>
 
           <div className="input-group">
-            <label htmlFor="stellarRadius">Stellar Radius (R☉)</label>
+            <label htmlFor="period">Period</label>
             <input
               type="text"
-              id="stellarRadius"
-              value={modelInputs.stellarRadius}
-              onChange={(e) => handleInputChange('stellarRadius', e.target.value)}
+              id="period"
+              value={modelInputs.period}
+              onChange={(e) => handleInputChange('period', e.target.value)}
+              placeholder="e.g., 4.2"
+              className="model-input"
+            />
+            <span className="input-unit">Orbital period (days)</span>
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="duration">Duration</label>
+            <input
+              type="text"
+              id="duration"
+              value={modelInputs.duration}
+              onChange={(e) => handleInputChange('duration', e.target.value)}
+              placeholder="e.g., 2.8"
+              className="model-input"
+            />
+            <span className="input-unit">Transit duration (hours)</span>
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="depth">Depth</label>
+            <input
+              type="text"
+              id="depth"
+              value={modelInputs.depth}
+              onChange={(e) => handleInputChange('depth', e.target.value)}
+              placeholder="e.g., 0.015"
+              className="model-input"
+            />
+            <span className="input-unit">Transit depth (relative brightness drop)</span>
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="radius">Planet Radius</label>
+            <input
+              type="text"
+              id="radius"
+              value={modelInputs.radius}
+              onChange={(e) => handleInputChange('radius', e.target.value)}
+              placeholder="e.g., 1.2"
+              className="model-input"
+            />
+            <span className="input-unit">Planet radius (Earth radii)</span>
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="eqt">Equilibrium Temperature</label>
+            <input
+              type="text"
+              id="eqt"
+              value={modelInputs.eqt}
+              onChange={(e) => handleInputChange('eqt', e.target.value)}
+              placeholder="e.g., 288"
+              className="model-input"
+            />
+            <span className="input-unit">Temperature (Kelvin)</span>
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="insol">Insolation Flux</label>
+            <input
+              type="text"
+              id="insol"
+              value={modelInputs.insol}
+              onChange={(e) => handleInputChange('insol', e.target.value)}
+              placeholder="e.g., 1.1"
+              className="model-input"
+            />
+            <span className="input-unit">Relative to Earth</span>
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="st_teff">Stellar Temperature</label>
+            <input
+              type="text"
+              id="st_teff"
+              value={modelInputs.st_teff}
+              onChange={(e) => handleInputChange('st_teff', e.target.value)}
+              placeholder="e.g., 5800"
+              className="model-input"
+            />
+            <span className="input-unit">Effective temperature (K)</span>
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="st_logg">Stellar Surface Gravity</label>
+            <input
+              type="text"
+              id="st_logg"
+              value={modelInputs.st_logg}
+              onChange={(e) => handleInputChange('st_logg', e.target.value)}
+              placeholder="e.g., 4.4"
+              className="model-input"
+            />
+            <span className="input-unit">log(g) [cm/s²]</span>
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="st_rad">Stellar Radius</label>
+            <input
+              type="text"
+              id="st_rad"
+              value={modelInputs.st_rad}
+              onChange={(e) => handleInputChange('st_rad', e.target.value)}
               placeholder="e.g., 1.1"
               className="model-input"
             />
@@ -289,94 +448,44 @@ Would you like to explore any specific aspects of this discovery or ask question
           </div>
 
           <div className="input-group">
-            <label htmlFor="stellarTemperature">Stellar Temperature</label>
+            <label htmlFor="ra">Right Ascension</label>
             <input
               type="text"
-              id="stellarTemperature"
-              value={modelInputs.stellarTemperature}
-              onChange={(e) => handleInputChange('stellarTemperature', e.target.value)}
-              placeholder="e.g., 5800"
+              id="ra"
+              value={modelInputs.ra}
+              onChange={(e) => handleInputChange('ra', e.target.value)}
+              placeholder="e.g., 285.67"
               className="model-input"
             />
-            <span className="input-unit">Kelvin</span>
+            <span className="input-unit">Degrees</span>
           </div>
 
           <div className="input-group">
-            <label htmlFor="orbitalPeriod">Orbital Period</label>
+            <label htmlFor="dec">Declination</label>
             <input
               type="text"
-              id="orbitalPeriod"
-              value={modelInputs.orbitalPeriod}
-              onChange={(e) => handleInputChange('orbitalPeriod', e.target.value)}
-              placeholder="e.g., 4.2"
+              id="dec"
+              value={modelInputs.dec}
+              onChange={(e) => handleInputChange('dec', e.target.value)}
+              placeholder="e.g., 42.33"
               className="model-input"
             />
-            <span className="input-unit">Days</span>
+            <span className="input-unit">Degrees</span>
           </div>
 
           <div className="input-group">
-            <label htmlFor="transitDepth">Transit Depth</label>
-            <input
-              type="text"
-              id="transitDepth"
-              value={modelInputs.transitDepth}
-              onChange={(e) => handleInputChange('transitDepth', e.target.value)}
-              placeholder="e.g., 0.015"
+            <label htmlFor="mission_code">Mission Code</label>
+            <select
+              id="mission_code"
+              value={modelInputs.mission_code}
+              onChange={(e) => handleInputChange('mission_code', e.target.value)}
               className="model-input"
-            />
-            <span className="input-unit">Fractional</span>
-          </div>
-
-          <div className="input-group">
-            <label htmlFor="transitDuration">Transit Duration</label>
-            <input
-              type="text"
-              id="transitDuration"
-              value={modelInputs.transitDuration}
-              onChange={(e) => handleInputChange('transitDuration', e.target.value)}
-              placeholder="e.g., 2.8"
-              className="model-input"
-            />
-            <span className="input-unit">Hours</span>
-          </div>
-
-          <div className="input-group">
-            <label htmlFor="impactParameter">Impact Parameter</label>
-            <input
-              type="text"
-              id="impactParameter"
-              value={modelInputs.impactParameter}
-              onChange={(e) => handleInputChange('impactParameter', e.target.value)}
-              placeholder="e.g., 0.3"
-              className="model-input"
-            />
-            <span className="input-unit">0-1 scale</span>
-          </div>
-
-          <div className="input-group">
-            <label htmlFor="eccentricity">Orbital Eccentricity</label>
-            <input
-              type="text"
-              id="eccentricity"
-              value={modelInputs.eccentricity}
-              onChange={(e) => handleInputChange('eccentricity', e.target.value)}
-              placeholder="e.g., 0.05"
-              className="model-input"
-            />
-            <span className="input-unit">0-1 scale</span>
-          </div>
-
-          <div className="input-group">
-            <label htmlFor="metallicity">Stellar Metallicity</label>
-            <input
-              type="text"
-              id="metallicity"
-              value={modelInputs.metallicity}
-              onChange={(e) => handleInputChange('metallicity', e.target.value)}
-              placeholder="e.g., 0.1"
-              className="model-input"
-            />
-            <span className="input-unit">[Fe/H] dex</span>
+            >
+              <option value="KEPLER">KEPLER</option>
+              <option value="TESS">TESS</option>
+              <option value="K2">K2</option>
+            </select>
+            <span className="input-unit">Space mission</span>
           </div>
         </div>
 
@@ -428,27 +537,27 @@ Would you like to explore any specific aspects of this discovery or ask question
           {modelPrediction && (
             <div className="quick-stats">
               <div className="stat-card">
-                <div className="stat-label">Planet Type</div>
-                <div className="stat-value">{modelPrediction.planetType}</div>
+                <div className="stat-label">Classification</div>
+                <div className="stat-value">{getClassificationDescription(modelPrediction.predicted_label)}</div>
               </div>
               <div className="stat-card">
-                <div className="stat-label">Radius</div>
-                <div className="stat-value">{modelPrediction.planetRadius} R⊕</div>
+                <div className="stat-label">Label Encoding</div>
+                <div className="stat-value">{modelPrediction.label_enc}</div>
               </div>
               <div className="stat-card">
-                <div className="stat-label">Mass</div>
-                <div className="stat-value">{modelPrediction.planetMass} M⊕</div>
+                <div className="stat-label">Planet Probability</div>
+                <div className="stat-value">{(parseFloat(modelPrediction.probability_scores.planet) * 100).toFixed(1)}%</div>
               </div>
               <div className="stat-card">
-                <div className="stat-label">Temperature</div>
-                <div className="stat-value">{modelPrediction.equilibriumTemp} K</div>
+                <div className="stat-label">Candidate Probability</div>
+                <div className="stat-value">{(parseFloat(modelPrediction.probability_scores.candidate) * 100).toFixed(1)}%</div>
               </div>
               <div className="stat-card">
-                <div className="stat-label">Habitability</div>
-                <div className="stat-value">{modelPrediction.habitabilityScore}/100</div>
+                <div className="stat-label">False Positive Probability</div>
+                <div className="stat-value">{(parseFloat(modelPrediction.probability_scores.false_positive) * 100).toFixed(1)}%</div>
               </div>
               <div className="stat-card">
-                <div className="stat-label">Confidence</div>
+                <div className="stat-label">Model Confidence</div>
                 <div className="stat-value">{modelPrediction.confidence}%</div>
               </div>
             </div>

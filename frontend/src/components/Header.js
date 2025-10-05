@@ -23,7 +23,7 @@ const Header = () => {
                 <circle cx="12" cy="12" r="2" fill="var(--primary-bg)"/>
               </svg>
             </div>
-            <span className="app-title">Exoplanet Lab</span>
+            <span className="app-title">Nexa</span>
           </Link>
         </div>
         
