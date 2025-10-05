@@ -17,7 +17,7 @@ import os
 # Configuration
 # -------------------------------
 DATA_PATH = "merged_exoplanet_debug_full_log.csv"
-OUTPUT_DIR = "ensemble_outputs"
+OUTPUT_DIR = "Models"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 RANDOM_STATE = 42
 

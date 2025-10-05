@@ -1,5 +1,5 @@
 # ------------------------------------------------------------
-# predict_explain_demo_console_friendly_v2.py
+# predict_explain.py
 # ------------------------------------------------------------
 # This version provides clear, human-readable prompts with
 # short descriptions of each feature during input.
@@ -14,7 +14,7 @@ from pytorch_tabnet.tab_model import TabNetClassifier
 # ------------------------------------------------------------
 # Configuration
 # ------------------------------------------------------------
-OUTPUT_DIR = "ensemble_outputs"
+OUTPUT_DIR = "spaceapps/backend/Models"
 
 # Ordered feature lists
 numeric_cols = [
