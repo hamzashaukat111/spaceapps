@@ -1,0 +1,15 @@
+{
+  "period": 289.86,
+  "duration": 4.5,
+  "depth": 150.0,
+  "radius": 2.38,
+  "eqt": 279.0,
+  "insol": 0.89,
+  "st_teff": 5518.0,
+  "st_logg": 4.45,
+  "st_rad": 0.98,
+  "ra": 290.567,
+  "dec": 44.280,
+  "source_id": "Kepler-22",
+  "mission_code": "KEPLER"
+}

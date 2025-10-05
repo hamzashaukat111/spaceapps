@@ -1,0 +1,33 @@
+properties:
+  managedEnvironmentId: /subscriptions/{subscription-id}/resourceGroups/exoplanet-rg/providers/Microsoft.App/managedEnvironments/exoplanet-env
+  configuration:
+    ingress:
+      external: true
+      targetPort: 8000
+      transport: auto
+      traffic:
+        - weight: 100
+          latestRevision: true
+    registries:
+      - server: exoplanetacr.azurecr.io
+        identity: system
+  template:
+    containers:
+      - image: exoplanetacr.azurecr.io/exoplanet-api:latest
+        name: exoplanet-api
+        env:
+          - name: MODEL_DIR
+            value: "Models"
+          - name: PYTHONUNBUFFERED
+            value: "1"
+        resources:
+          cpu: 1.0
+          memory: 2Gi
+    scale:
+      minReplicas: 0
+      maxReplicas: 10
+      rules:
+        - name: http-scaling
+          http:
+            metadata:
+              concurrentRequests: "100"

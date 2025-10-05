@@ -1,0 +1,22 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.vscode/
+.idea/
+*.swp
+*.swo
+*.csv
+Training Script/
+.ipynb_checkpoints/
+*.ipynb
+*.log
+.DS_Store
+Thumbs.db
+.pytest_cache/
+.coverage
+htmlcov/

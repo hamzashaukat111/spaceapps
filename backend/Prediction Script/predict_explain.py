@@ -14,7 +14,7 @@ from pytorch_tabnet.tab_model import TabNetClassifier
 # ------------------------------------------------------------
 # Configuration
 # ------------------------------------------------------------
-OUTPUT_DIR = "spaceapps/backend/Models"
+OUTPUT_DIR = "../Models"
 
 # Ordered feature lists
 numeric_cols = [
