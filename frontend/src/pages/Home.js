@@ -80,16 +80,16 @@ const Home = () => {
           <p>Discover the fascinating world of AI-powered exoplanet detection through our interactive story</p>
         </div>
         <div className="main-video-container">
-          <video 
-            width="100%" 
-            height="500" 
-            controls 
+          <iframe
+            width="100%"
+            height="500"
+            src="https://www.youtube.com/embed/rBtHr_lQsqk"
+            title="Exoplanet Discovery Video"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
             className="main-story-video"
-            poster="/video-poster.jpg"
-          >
-            <source src="./1005.mp4?v=3" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
+          ></iframe>
         </div>
         <div className="video-actions">
           <button className="video-action-btn primary" onClick={() => setShowStory(true)}>

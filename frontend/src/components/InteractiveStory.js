@@ -16,17 +16,16 @@ const InteractiveStory = ({ isOpen, onClose }) => {
       visual: (
         <div className="story-visual video-view">
           <div className="story-video-container">
-            <video 
-              width="100%" 
-              height="300" 
-              controls 
-              autoPlay 
-              muted
+            <iframe
+              width="100%"
+              height="300"
+              src="https://www.youtube.com/embed/rBtHr_lQsqk?autoplay=1&mute=1"
+              title="Exoplanet Discovery Video"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
               className="story-video"
-            >
-              <source src="./1005.mp4?v=3" type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
+            ></iframe>
           </div>
           <div className="video-description">
             <p>🎬 Interactive Storytelling Experience</p>

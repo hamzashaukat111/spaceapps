@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import './LightCurveExplorer.css';
+import azureAIAgent from '../services/azureAIAgent';
 
 const LightCurveExplorer = () => {
   // AI Model Input Parameters (12 fields matching dataset)
@@ -122,41 +123,77 @@ const LightCurveExplorer = () => {
     setLlmResponse('');
 
     try {
-      // Simulate API call to AI model
-      setTimeout(async () => {
-        // Mock prediction results based on dataset output format
-        const labelOptions = ['planet', 'candidate', 'false_positive'];
-        const labelIndex = Math.floor(Math.random() * 3);
-        const predictedLabel = labelOptions[labelIndex];
-        
-        const prediction = {
-          label_enc: labelIndex, // 0=planet, 1=candidate, 2=false_positive
-          predicted_label: predictedLabel,
-          confidence: (85 + Math.random() * 15).toFixed(1),
-          probability_scores: {
-            planet: (Math.random() * 0.4 + (labelIndex === 0 ? 0.6 : 0.1)).toFixed(3),
-            candidate: (Math.random() * 0.4 + (labelIndex === 1 ? 0.6 : 0.1)).toFixed(3),
-            false_positive: (Math.random() * 0.4 + (labelIndex === 2 ? 0.6 : 0.1)).toFixed(3)
-          },
-          // Additional derived metrics for display
-          planetRadius: parseFloat(modelInputs.radius) || 1.0,
-          equilibriumTemp: parseFloat(modelInputs.eqt) || 288,
-          stellarTemp: parseFloat(modelInputs.st_teff) || 5800,
-          transitDepth: parseFloat(modelInputs.depth) || 0.01,
-          orbitalPeriod: parseFloat(modelInputs.period) || 1.0
-        };
+      // Prepare payload for API call
+      const payload = {
+        period: parseFloat(modelInputs.period),
+        duration: parseFloat(modelInputs.duration),
+        depth: parseFloat(modelInputs.depth),
+        radius: parseFloat(modelInputs.radius),
+        eqt: parseFloat(modelInputs.eqt),
+        insol: parseFloat(modelInputs.insol),
+        st_teff: parseFloat(modelInputs.st_teff),
+        st_logg: parseFloat(modelInputs.st_logg),
+        st_rad: parseFloat(modelInputs.st_rad),
+        ra: parseFloat(modelInputs.ra),
+        dec: parseFloat(modelInputs.dec),
+        source_id: modelInputs.source_id,
+        mission_code: modelInputs.mission_code
+      };
 
-        setModelPrediction(prediction);
+      // Call the actual API
+      const response = await fetch('https://exoplanet-api.agreeableocean-4e4135ec.eastus.azurecontainerapps.io/predict', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
 
-        // Generate LLM response based on prediction
-        const llmText = generateLLMResponse(prediction);
-        setLlmResponse(llmText);
-        
-        setIsProcessing(false);
-      }, 3000);
+      if (!response.ok) {
+        throw new Error(`API request failed with status ${response.status}`);
+      }
+
+      const apiResult = await response.json();
+      
+      // Transform API response to match our frontend format
+      const prediction = {
+        predicted_label: apiResult.prediction, // 'planet', 'candidate', or 'false_positive'
+        confidence: (apiResult.confidence * 100).toFixed(1), // Convert to percentage
+        probability_scores: {
+          planet: apiResult.probabilities.planet.toFixed(3),
+          candidate: apiResult.probabilities.candidate.toFixed(3),
+          false_positive: apiResult.probabilities.false_positive.toFixed(3)
+        },
+        // Additional derived metrics for display
+        planetRadius: parseFloat(modelInputs.radius) || 1.0,
+        equilibriumTemp: parseFloat(modelInputs.eqt) || 288,
+        stellarTemp: parseFloat(modelInputs.st_teff) || 5800,
+        transitDepth: parseFloat(modelInputs.depth) || 0.01,
+        orbitalPeriod: parseFloat(modelInputs.period) || 1.0,
+        // Include explainability data
+        catboost_shap: apiResult.catboost_shap,
+        tabnet_importance: apiResult.tabnet_importance
+      };
+
+      setModelPrediction(prediction);
+
+      // Get AI explanation from Azure AI Foundry Agent
+      try {
+        console.log('Requesting AI explanation from Azure AI Foundry...');
+        const aiExplanation = await azureAIAgent.getExplanation(prediction, modelInputs);
+        setLlmResponse(aiExplanation);
+      } catch (aiError) {
+        console.error('AI Agent error:', aiError);
+        // Fallback to basic response if AI agent fails
+        const fallbackText = generateLLMResponse(prediction);
+        setLlmResponse(fallbackText);
+      }
+      
+      setIsProcessing(false);
 
     } catch (error) {
       console.error('Prediction failed:', error);
+      alert(`Prediction failed: ${error.message}. Please check your inputs and try again.`);
       setIsProcessing(false);
     }
   };
@@ -181,6 +218,29 @@ const LightCurveExplorer = () => {
     const isConfirmed = prediction.predicted_label === 'planet';
     const isCandidate = prediction.predicted_label === 'candidate';
     
+    // Get top important features from TabNet
+    let topFeatures = '';
+    if (prediction.tabnet_importance) {
+      const importanceEntries = Object.entries(prediction.tabnet_importance)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3);
+      topFeatures = importanceEntries
+        .map(([feature, importance]) => `  - **${feature}**: ${(importance * 100).toFixed(2)}%`)
+        .join('\n');
+    }
+
+    // Get SHAP values info
+    let shapInfo = '';
+    if (prediction.catboost_shap) {
+      const shapEntries = Object.entries(prediction.catboost_shap);
+      shapInfo = shapEntries
+        .map(([feature, value]) => {
+          const direction = value > 0 ? 'increases' : 'decreases';
+          return `  - **${feature}**: ${direction} prediction confidence by ${Math.abs(value).toFixed(4)}`;
+        })
+        .join('\n');
+    }
+    
     return `🌟 **Nexa AI Classification Complete!**
 
 Based on the stellar and transit parameters you provided, our AI model has classified this object as: **${classification}**
@@ -188,7 +248,6 @@ Based on the stellar and transit parameters you provided, our AI model has class
 **🎯 Classification Results:**
 - **Prediction**: ${classification}
 - **Confidence**: ${prediction.confidence}%
-- **Label Encoding**: ${prediction.label_enc}
 
 **📊 Probability Scores:**
 - **Planet**: ${(parseFloat(prediction.probability_scores.planet) * 100).toFixed(1)}%
@@ -209,6 +268,15 @@ ${isConfirmed ? 'This object shows strong evidence of being a genuine exoplanet 
 
 The transit signature with a depth of ${(prediction.transitDepth * 100).toFixed(3)}% and period of ${prediction.orbitalPeriod} days ${isConfirmed || isCandidate ? 'provides valuable insights into this potential world\'s properties.' : 'appears to be caused by non-planetary sources.'}
 
+${topFeatures ? `**🔍 Most Important Features (TabNet Analysis):**
+${topFeatures}
+
+` : ''}${shapInfo ? `**📈 Feature Impact (SHAP Values):**
+${shapInfo}
+
+` : ''}**💡 What This Means:**
+The AI model uses ensemble learning combining CatBoost and TabNet architectures to analyze your input parameters. The feature importance scores show which characteristics most influenced this classification, while SHAP values reveal how each feature pushed the prediction toward or away from the final result.
+
 Would you like to explore specific aspects of this classification or ask questions about the analysis methodology?`;
   };
 
@@ -223,20 +291,47 @@ Would you like to explore specific aspects of this classification or ask questio
     };
 
     setChatMessages(prev => [...prev, userMessage]);
+    const currentQuestion = chatInput;
     setChatInput('');
     setIsChatLoading(true);
 
-    // Simulate LLM response
-    setTimeout(() => {
+    try {
+      // Create thread if needed and send message to Azure AI Agent
+      const threadId = await azureAIAgent.createThread();
+      
+      // Format context for the agent
+      const contextPrompt = `Previous classification result:
+- Prediction: ${modelPrediction.predicted_label}
+- Confidence: ${modelPrediction.confidence}%
+- Input source: ${modelInputs.source_id} (${modelInputs.mission_code})
+
+User question: ${currentQuestion}
+
+Please provide a helpful, educational response based on the classification results and the user's question.`;
+
+      const aiResponse = await azureAIAgent.sendMessage(threadId, contextPrompt);
+
       const botResponse = {
         type: 'bot',
-        content: generateChatResponse(chatInput, modelPrediction),
+        content: aiResponse,
         timestamp: new Date().toLocaleTimeString()
       };
 
       setChatMessages(prev => [...prev, botResponse]);
+    } catch (error) {
+      console.error('Chat AI error:', error);
+      
+      // Fallback to local response generation
+      const botResponse = {
+        type: 'bot',
+        content: generateChatResponse(currentQuestion, modelPrediction),
+        timestamp: new Date().toLocaleTimeString()
+      };
+
+      setChatMessages(prev => [...prev, botResponse]);
+    } finally {
       setIsChatLoading(false);
-    }, 1500);
+    }
   };
 
   // Generate contextual chat responses
