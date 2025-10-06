@@ -661,8 +661,8 @@ Please provide a helpful, educational response based on the classification resul
           {/* Chat Interface */}
           <div className="chat-interface">
             <div className="chat-header">
-              <h4>💬 Chat with AI Assistant</h4>
-              <p>Ask questions about the analysis results</p>
+              <h4>💬 Chat with Nexus – Your Nexa AI Agent</h4>
+              <p>Ask Nexus questions about your analysis results.</p>
             </div>
 
             <div className="chat-messages">

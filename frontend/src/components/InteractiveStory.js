@@ -19,10 +19,10 @@ const InteractiveStory = ({ isOpen, onClose }) => {
             <iframe
               width="100%"
               height="300"
-              src="https://www.youtube.com/embed/rBtHr_lQsqk?autoplay=1&mute=1"
+              src="https://www.youtube-nocookie.com/embed/rBtHr_lQsqk?autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=1"
               title="Exoplanet Discovery Video"
               frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
               className="story-video"
             ></iframe>

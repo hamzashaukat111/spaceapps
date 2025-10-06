@@ -83,10 +83,10 @@ const Home = () => {
           <iframe
             width="100%"
             height="500"
-            src="https://www.youtube.com/embed/rBtHr_lQsqk"
+            src="https://www.youtube-nocookie.com/embed/rBtHr_lQsqk?rel=0&modestbranding=1&playsinline=1&enablejsapi=1"
             title="Exoplanet Discovery Video"
             frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
             className="main-story-video"
           ></iframe>
